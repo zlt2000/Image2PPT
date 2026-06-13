@@ -1,0 +1,48 @@
+
+$ C:\Program Files\Python312\python.exe D:\workspaces\projects\ai\Image2PPT\scripts\ocr\prepare_ocr.py --source-dir D:\workspaces\projects\ai\Image2PPT\web\data\outputs\e550e879-e740-4c13-952e-d2a9dca6d952\source --work-dir D:\workspaces\projects\ai\Image2PPT\web\data\outputs\e550e879-e740-4c13-952e-d2a9dca6d952 --threshold 0.95 --max-entries 50 --skip-cross-verify
+Traceback (most recent call last):
+  File "D:\workspaces\projects\ai\Image2PPT\scripts\ocr\prepare_ocr.py", line 535, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "D:\workspaces\projects\ai\Image2PPT\scripts\ocr\prepare_ocr.py", line 369, in main
+    from paddleocr import PaddleOCR
+  File "C:\Users\zltdi\AppData\Roaming\Python\Python312\site-packages\paddleocr\__init__.py", line 15, in <module>
+    from paddlex.inference.utils.benchmark import benchmark
+  File "C:\Users\zltdi\AppData\Roaming\Python\Python312\site-packages\paddlex\__init__.py", line 53, in <module>
+    from .inference import create_pipeline, create_predictor
+  File "C:\Users\zltdi\AppData\Roaming\Python\Python312\site-packages\paddlex\inference\__init__.py", line 16, in <module>
+    from .models import HPIConfig, PaddlePredictorOption, create_predictor
+  File "C:\Users\zltdi\AppData\Roaming\Python\Python312\site-packages\paddlex\inference\models\__init__.py", line 25, in <module>
+    from ..utils.official_models import official_models
+  File "C:\Users\zltdi\AppData\Roaming\Python\Python312\site-packages\paddlex\inference\utils\official_models.py", line 33, in <module>
+    import modelscope
+  File "C:\Users\zltdi\AppData\Roaming\Python\Python312\site-packages\modelscope\__init__.py", line 5, in <module>
+    from modelscope.utils.import_utils import (LazyImportModule,
+  File "C:\Users\zltdi\AppData\Roaming\Python\Python312\site-packages\modelscope\utils\import_utils.py", line 23, in <module>
+    from modelscope.utils.ast_utils import (INDEX_KEY, MODULE_KEY, REQUIREMENT_KEY,
+  File "C:\Users\zltdi\AppData\Roaming\Python\Python312\site-packages\modelscope\utils\ast_utils.py", line 31, in <module>
+    INDEXER_FILE_DIR = get_modelscope_cache_dir()
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\zltdi\AppData\Roaming\Python\Python312\site-packages\modelscope\utils\file_utils.py", line 58, in get_modelscope_cache_dir
+    os.getenv('MODELSCOPE_CACHE', get_default_modelscope_cache_dir()))
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\zltdi\AppData\Roaming\Python\Python312\site-packages\modelscope\utils\file_utils.py", line 45, in get_default_modelscope_cache_dir
+    default_cache_dir = os.path.expanduser(Path.home().joinpath(
+                                           ^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\pathlib.py", line 1202, in home
+    return cls("~").expanduser()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\pathlib.py", line 1406, in expanduser
+    raise RuntimeError("Could not determine home directory.")
+RuntimeError: Could not determine home directory.
+Traceback (most recent call last):
+  File "D:\workspaces\projects\ai\Image2PPT\scripts\convert.py", line 273, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "D:\workspaces\projects\ai\Image2PPT\scripts\convert.py", line 260, in main
+    run(prepare_cmd)
+  File "D:\workspaces\projects\ai\Image2PPT\scripts\convert.py", line 181, in run
+    subprocess.run(cmd, check=True)
+  File "C:\Program Files\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['C:\\Program Files\\Python312\\python.exe', 'D:\\workspaces\\projects\\ai\\Image2PPT\\scripts\\ocr\\prepare_ocr.py', '--source-dir', 'D:\\workspaces\\projects\\ai\\Image2PPT\\web\\data\\outputs\\e550e879-e740-4c13-952e-d2a9dca6d952\\source', '--work-dir', 'D:\\workspaces\\projects\\ai\\Image2PPT\\web\\data\\outputs\\e550e879-e740-4c13-952e-d2a9dca6d952', '--threshold', '0.95', '--max-entries', '50', '--skip-cross-verify']' returned non-zero exit status 1.done

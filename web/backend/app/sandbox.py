@@ -39,18 +39,29 @@ Caveats — be honest about what this does NOT give you:
 from __future__ import annotations
 
 import os
-import resource
 import shutil
 import sys
 from pathlib import Path
 
 from .config import REPO_ROOT, get_settings
 
+# `resource` is POSIX-only (rlimit). On Windows the module does not exist.
+try:
+    import resource as _resource
+    _HAS_RESOURCE = True
+except ModuleNotFoundError:
+    _resource = None  # type: ignore[assignment]
+    _HAS_RESOURCE = False
+
 
 # Env vars that are safe (and sometimes needed) to forward into the
 # conversion subprocess. Anything not in this set is dropped.
 _SAFE_ENV_KEYS = {
     "PATH", "HOME", "USER", "LOGNAME",
+    # Windows home directory variables (Path.home() checks USERPROFILE
+    # first, then HOMEDRIVE+HOMEPATH). Without them, modelscope/paddlex
+    # cannot resolve its cache dir and raises RuntimeError.
+    "USERPROFILE", "HOMEDRIVE", "HOMEPATH",
     "LANG", "LC_ALL", "LC_CTYPE",
     "TMPDIR", "TEMP", "TMP",
     "SHELL",                       # LibreOffice sometimes shells out
@@ -62,9 +73,23 @@ _SAFE_ENV_KEYS = {
     "PADDLE_HOME", "PADDLE_PDX_CACHE_HOME",
     "HF_HOME", "HF_HUB_CACHE", "TRANSFORMERS_CACHE",
     "XDG_CACHE_HOME", "EASYOCR_MODULE_PATH",
-    "PADDLEX_HOME", "PADDLEOCR_HOME",
+    "PADDLEX_HOME", "PADDLEOCR_HOME", "MODELSCOPE_CACHE",
     # Display / GPU stuff some libs probe at import time.
     "DISPLAY", "WAYLAND_DISPLAY",
+    # Windows: Python's `site` derives the user-site-packages path
+    # from %APPDATA% (Roaming). Stripping it makes the child Python
+    # unable to find packages installed via `pip install --user`
+    # — which on Windows is the default for the bundled Python.
+    # LOCALAPPDATA matters for some tool caches (e.g. Paddle's
+    # %LOCALAPPDATA%\\paddleocr). Neither leaks secrets.
+    "APPDATA", "LOCALAPPDATA",
+    # Windows: the Winsock provider chain and other OS DLLs live under
+    # %SYSTEMROOT%\\System32. Without it, _overlapped.pyd (imported
+    # transitively by asyncio → paddle.utils.cpp_extension) fails to
+    # enumerate protocol providers and raises WinError 10106
+    # (WSAEPROVIDERFAILEDINIT). WINDIR is the same value, kept for
+    # tools that probe either name. Both are system paths — no secrets.
+    "SYSTEMROOT", "WINDIR",
 }
 
 
@@ -73,33 +98,42 @@ def safe_env() -> dict[str, str]:
     env = {k: os.environ[k] for k in _SAFE_ENV_KEYS if k in os.environ}
     # Always set unbuffered so we can stream stdout line-by-line.
     env["PYTHONUNBUFFERED"] = "1"
+    # Force UTF-8 on stdout/stderr. Without this, Windows child Popen
+    # (where stdout is a pipe) inherits the parent's code page
+    # (typically cp936/GBK) and crashes on the 🟢/🟡/🔴 tier glyphs
+    # and any non-ASCII CJK text OCR emits.
+    env["PYTHONIOENCODING"] = "utf-8"
     return env
 
 
 def make_preexec(*, memory_mb: int, cpu_seconds: int, output_mb: int):
     """Return a preexec_fn that sets rlimits in the forked child.
 
-    Any zero/negative value disables that particular limit. We never
-    raise from preexec — if setrlimit isn't supported (some systems
-    don't expose RLIMIT_AS), we silently move on; the other layers
-    still apply.
+    Returns None on Windows (preexec_fn is POSIX-only — subprocess
+    rejects a non-None value with ValueError). Any zero/negative value
+    disables that particular limit. We never raise from preexec — if
+    setrlimit isn't supported (some systems don't expose RLIMIT_AS),
+    we silently move on; the other layers still apply.
     """
+    if not _HAS_RESOURCE:
+        return None
+
     def _apply() -> None:
         if memory_mb > 0:
             try:
                 lim = memory_mb * 1024 * 1024
-                resource.setrlimit(resource.RLIMIT_AS, (lim, lim))
+                _resource.setrlimit(_resource.RLIMIT_AS, (lim, lim))
             except (OSError, ValueError):
                 pass
         if cpu_seconds > 0:
             try:
-                resource.setrlimit(resource.RLIMIT_CPU, (cpu_seconds, cpu_seconds))
+                _resource.setrlimit(_resource.RLIMIT_CPU, (cpu_seconds, cpu_seconds))
             except (OSError, ValueError):
                 pass
         if output_mb > 0:
             try:
                 lim = output_mb * 1024 * 1024
-                resource.setrlimit(resource.RLIMIT_FSIZE, (lim, lim))
+                _resource.setrlimit(_resource.RLIMIT_FSIZE, (lim, lim))
             except (OSError, ValueError):
                 pass
         # Detach into a new session so the parent can kill the whole
@@ -107,7 +141,7 @@ def make_preexec(*, memory_mb: int, cpu_seconds: int, output_mb: int):
         # single killpg() if needed.
         try:
             os.setsid()
-        except OSError:
+        except (OSError, AttributeError):
             pass
 
     return _apply

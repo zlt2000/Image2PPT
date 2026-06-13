@@ -154,6 +154,9 @@ def main() -> int:
         use_doc_orientation_classify=False,
         use_doc_unwarping=False,
         use_textline_orientation=False,
+        # PaddlePaddle 3.3.x ONEDNN runtime can't convert pir::DoubleAttribute
+        # arrays from PP-OCRv6 models, crashing in onednn_instruction.cc.
+        enable_mkldnn=False,
         return_word_box=True,
     )
 

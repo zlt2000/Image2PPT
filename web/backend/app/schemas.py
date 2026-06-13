@@ -1,10 +1,24 @@
 """Pydantic models for API I/O."""
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_serializer
+
+
+def _utc_iso(dt: datetime | None) -> str | None:
+    """Serialize a datetime as UTC ISO with explicit offset.
+
+    SQLite strips tzinfo on round-trip, so values stored via models.utcnow()
+    come back naive. Without an explicit offset the browser would parse the
+    string as local time and skew the display by the local UTC offset.
+    """
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.isoformat()
 
 
 class LoginIn(BaseModel):
@@ -44,6 +58,10 @@ class JobOut(BaseModel):
     queue_position: int = 0
     eta_seconds: int = 0
 
+    @field_serializer("created_at", "started_at", "finished_at")
+    def _serialize_dt(self, dt: datetime | None) -> str | None:
+        return _utc_iso(dt)
+
 
 class JobLogOut(BaseModel):
     id: str
@@ -62,6 +80,10 @@ class VersionOut(BaseModel):
     last_check: datetime | None
     sandbox_backend: str = "none"
     sandbox_allow_network: bool = True
+
+    @field_serializer("last_check")
+    def _serialize_dt(self, dt: datetime | None) -> str | None:
+        return _utc_iso(dt)
 
 
 class UserCreate(BaseModel):

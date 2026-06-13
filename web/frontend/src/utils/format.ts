@@ -20,11 +20,10 @@ export function fmtSize(bytes: number): string {
 export function fmtTime(iso: string | null): string {
   if (!iso) return "—";
   const d = new Date(iso);
-  const now = new Date();
-  const sameDay = d.toDateString() === now.toDateString();
-  const opts: Intl.DateTimeFormatOptions = sameDay
-    ? { hour: "2-digit", minute: "2-digit", hour12: false }
-    : { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false };
+  const sameYear = d.getFullYear() === new Date().getFullYear();
+  const opts: Intl.DateTimeFormatOptions = sameYear
+    ? { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }
+    : { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false };
   return d.toLocaleString("zh-CN", opts);
 }
 

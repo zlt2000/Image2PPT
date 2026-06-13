@@ -47,6 +47,15 @@ import subprocess
 import sys
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
+
+# Tier emoji (🟢🟡🔴) in summary prints crash a GBK-default Windows console.
+# Reconfigure stdio to UTF-8 before any print fires.
+if sys.platform == "win32":
+    for _s in (sys.stdout, sys.stderr):
+        try:
+            _s.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
 from pathlib import Path
 
 # Per-page scripts live in scripts/page/; tables/ is consulted by
@@ -332,7 +341,7 @@ def main() -> int:
         [sys.executable, str(SCRIPTS_ROOT / "deck" / "combine_layouts.py"),
          "--layouts", str(layouts_dir),
          "--out", str(combined_path)],
-        check=True, capture_output=True, text=True,
+        check=True, capture_output=True, text=True, encoding="utf-8", errors="replace",
     )
     print(r.stdout.strip())
     print(f"  stage 2 done in {time.time() - ts:.1f}s", flush=True)
@@ -361,7 +370,7 @@ def main() -> int:
              "--apply",
              "--min-group-size", "2",
              "--min-apply-size", "3"],
-            check=True, capture_output=True, text=True,
+            check=True, capture_output=True, text=True, encoding="utf-8", errors="replace",
         )
         if r.stdout.strip():
             print(r.stdout.strip())
@@ -400,7 +409,7 @@ def main() -> int:
              "--layout", str(combined_path),
              "--assets-root", str(work),
              "--out", str(pptx_path)],
-            check=True, capture_output=True, text=True,
+            check=True, capture_output=True, text=True, encoding="utf-8", errors="replace",
         )
         if r.stdout.strip():
             print(r.stdout.strip())
@@ -419,7 +428,7 @@ def main() -> int:
              "--work-dir", str(work),
              "--assets-root", str(work),
              "--iterations", str(args.font_calibration_iterations)],
-            check=True, capture_output=True, text=True,
+            check=True, capture_output=True, text=True, encoding="utf-8", errors="replace",
         )
         if r.stdout.strip():
             print(r.stdout.strip())
@@ -432,7 +441,7 @@ def main() -> int:
              "--apply",
              "--min-group-size", "2",
              "--min-apply-size", "3"],
-            check=True, capture_output=True, text=True,
+            check=True, capture_output=True, text=True, encoding="utf-8", errors="replace",
         )
         if r.stdout.strip():
             print(r.stdout.strip())
@@ -453,7 +462,7 @@ def main() -> int:
              "--assets-root", str(work),
              "--iterations", str(args.calibration_iterations),
              "--max-shift", str(args.calibration_max_shift)],
-            check=True, capture_output=True, text=True,
+            check=True, capture_output=True, text=True, encoding="utf-8", errors="replace",
         )
         if r.stdout.strip():
             print(r.stdout.strip())
@@ -466,7 +475,7 @@ def main() -> int:
              "--apply",
              "--min-group-size", "2",
              "--min-apply-size", "3"],
-            check=True, capture_output=True, text=True,
+            check=True, capture_output=True, text=True, encoding="utf-8", errors="replace",
         )
         if r.stdout.strip():
             print(r.stdout.strip())
@@ -477,7 +486,7 @@ def main() -> int:
              "--layout", str(combined_path),
              "--assets-root", str(work),
              "--out", str(pptx_path)],
-            check=True, capture_output=True, text=True,
+            check=True, capture_output=True, text=True, encoding="utf-8", errors="replace",
         )
         if r.stdout.strip():
             print(r.stdout.strip())
@@ -507,7 +516,7 @@ def main() -> int:
         [sys.executable, str(SCRIPTS_ROOT / "verify" / "inspect_pptx.py"),
          "--pptx", str(pptx_path),
          "--report", str(qa_path)],
-        check=True, capture_output=True, text=True,
+        check=True, capture_output=True, text=True, encoding="utf-8", errors="replace",
     )
     print(r.stdout.strip())
     print(f"  stage 4 done in {time.time() - ts:.1f}s", flush=True)
@@ -541,7 +550,7 @@ def main() -> int:
                 [sys.executable, str(SCRIPTS_ROOT / "verify" / "render_preview.py"),
                  "--pptx", str(pptx_path),
                  "--out-dir", str(work)],
-                check=True, capture_output=True, text=True,
+                check=True, capture_output=True, text=True, encoding="utf-8", errors="replace",
             )
             if r.stdout.strip():
                 print(r.stdout.strip())

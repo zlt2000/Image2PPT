@@ -66,6 +66,15 @@ import sys
 import time
 from pathlib import Path
 
+# Tier emoji (🟢🟡🔴) and CJK ocr text crash a GBK-default Windows console.
+# Reconfigure stdio to UTF-8 before any prints happen.
+if sys.platform == "win32":
+    for _s in (sys.stdout, sys.stderr):
+        try:
+            _s.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 # Sibling-script imports — same directory as this file.
 SCRIPTS = Path(__file__).resolve().parent
 SCRIPTS_ROOT = SCRIPTS.parent
@@ -374,6 +383,9 @@ def main() -> int:
         use_doc_orientation_classify=False,
         use_doc_unwarping=False,
         use_textline_orientation=False,
+        # PaddlePaddle 3.3.x ONEDNN runtime can't convert pir::DoubleAttribute
+        # arrays from PP-OCRv6 models, crashing in onednn_instruction.cc.
+        enable_mkldnn=False,
         # Emit per-character bboxes so inventory_to_layout.py can do
         # per-character color sampling (in-bbox color changes).
         return_word_box=True,

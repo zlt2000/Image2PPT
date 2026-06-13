@@ -1,0 +1,95 @@
+
+$ C:\Program Files\Python312\python.exe D:\workspaces\projects\ai\Image2PPT\scripts\ocr\prepare_ocr.py --source-dir output\sandbox_smoke_3\source --work-dir output\sandbox_smoke_3 --threshold 0.95 --max-entries 50 --skip-cross-verify
+ÐÅÏ¢: ÓÃÌá¹©µÄÄ£Ê½ÎÞ·¨ÕÒµ½ÎÄ¼þ¡£
+
+=== Stage 1: PaddleOCR (1 pages, warm model, device=cpu) ===
+[32mCreating model: ('PP-OCRv6_medium_det', None, None)[0m
+[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `C:\Users\zltdi\.paddlex\official_models\PP-OCRv6_medium_det`.[0m
+[32mCreating model: ('PP-OCRv6_medium_rec', None, None)[0m
+[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `C:\Users\zltdi\.paddlex\official_models\PP-OCRv6_medium_rec`.[0m
+  page_01.png -> 89 items
+  PaddleOCR done in 719.1s (89 total detections)
+
+=== Stage 2: 3-engine cross-verify (1 pages) ===
+  --skip-cross-verify set: all review entries â†’ red
+  page 01: 3 review entries (0 ðŸŸ¢, 0 ðŸŸ¡, 3 ðŸ”´)
+  cross-verify done in 0.9s (3 total entries: 0 ðŸŸ¢, 0 ðŸŸ¡, 3 ðŸ”´)
+
+=== Stage 3: autoclear heuristics (1 pages) ===
+  page 01: 1 entries auto-cleared
+  autoclear done in 0.0s (1 entries cleared)
+    H5_short_thin_lowconf: 1
+
+=== Stage 4: annotated review images (1 pages) ===
+  page 01: wrote page_01.ocr_review.annotated.png (2 review entries; 1 auto-cleared hidden)
+  rendered 1 annotated pages in 4.4s
+
+=== Summary ===
+  89 OCR detections across 1 pages
+  3 entries went through 3-engine cross-verify
+    0 ðŸŸ¢ strong consensus (accept as-is)
+    0 ðŸŸ¡ weak consensus (glance to verify)
+    3 ðŸ”´ no consensus (review carefully)
+  1 auto-cleared (decorative/logo)
+  2 entries have corrected_text pre-filled and ready to build
+
+=== Next steps ===
+  1. scripts/ocr/ocr_review_apply.py --work-dir output\sandbox_smoke_3
+     (merges suggested_text â†’ ocr.json, no agent input needed)
+  2. scripts/build_deck.py --source-dir output\sandbox_smoke_3\source --work-dir output\sandbox_smoke_3
+     (builds the first-draft PPTX)
+  3. OPTIONAL: open each ocr/page_NN.ocr_review.annotated.png,
+     override any entries you disagree with by editing the
+     matching ocr_review.json's corrected_text field, then
+     rerun steps 1+2 to rebuild with the corrections.
+
+$ C:\Program Files\Python312\python.exe D:\workspaces\projects\ai\Image2PPT\scripts\ocr\ocr_review_apply.py --work-dir output\sandbox_smoke_3
+  page 01: 1 corrected, 2 confirmed, 0 unfilled-kept
+
+[ocr_review_apply] TOTAL: 1 corrected, 2 confirmed, 0 unfilled (0 would have failed --require-filled).
+
+$ C:\Program Files\Python312\python.exe D:\workspaces\projects\ai\Image2PPT\scripts\build_deck.py --source-dir output\sandbox_smoke_3\source --work-dir output\sandbox_smoke_3 --table-score-threshold 0.85 --skip-render --skip-calibration
+
+=== 1/5  run_pipeline (erase + inventory + layout) ===
+{"text": 77, "image": 17, "subicon": 0, "line_subicon": 0, "out": "output\\sandbox_smoke_3\\inventory\\page_01.inventory.json"}
+{"text_elements": 77, "image_elements": 12, "shape_elements": 0, "manifest": "output\\sandbox_smoke_3\\manifests\\page_01.assets.json", "layout": "output\\sandbox_smoke_3\\layouts\\page_01.layout.json"}
+page 01: text= 77 image= 17 (194.7s)
+  stage 1 done in 194.7s
+
+=== 2/5  combine_layouts ===
+{
+  "slides": 1,
+  "out": "output\\sandbox_smoke_3\\layouts\\combined.layout.json"
+}
+  stage 2 done in 1.9s
+
+=== 2b/5  classify_text_slots ===
+Exception in thread Thread-3 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\threading.py", line 1075, in _bootstrap_inner
+    self.run()
+  File "C:\Program Files\Python312\Lib\threading.py", line 1012, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\Program Files\Python312\Lib\subprocess.py", line 1599, in _readerthread
+    buffer.append(fh.read())
+                  ^^^^^^^^^
+UnicodeDecodeError: 'gbk' codec can't decode byte 0x80 in position 173: illegal multibyte sequence
+Traceback (most recent call last):
+  File "D:\workspaces\projects\ai\Image2PPT\scripts\build_deck.py", line 643, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "D:\workspaces\projects\ai\Image2PPT\scripts\build_deck.py", line 375, in main
+    if r.stdout.strip():
+       ^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'strip'
+Traceback (most recent call last):
+  File "D:\workspaces\projects\ai\Image2PPT\scripts\convert.py", line 273, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "D:\workspaces\projects\ai\Image2PPT\scripts\convert.py", line 262, in main
+    run(build_cmd)
+  File "D:\workspaces\projects\ai\Image2PPT\scripts\convert.py", line 181, in run
+    subprocess.run(cmd, check=True)
+  File "C:\Program Files\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['C:\\Program Files\\Python312\\python.exe', 'D:\\workspaces\\projects\\ai\\Image2PPT\\scripts\\build_deck.py', '--source-dir', 'output\\sandbox_smoke_3\\source', '--work-dir', 'output\\sandbox_smoke_3', '--table-score-threshold', '0.85', '--skip-render', '--skip-calibration']' returned non-zero exit status 1.

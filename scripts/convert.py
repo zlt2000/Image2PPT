@@ -10,6 +10,15 @@ import sys
 import time
 from pathlib import Path
 
+# Windows default consoles (cp936/GBK) cannot encode CJK OCR text or tier
+# emojis written by this script and its children. Force UTF-8 stdio.
+if sys.platform == "win32":
+    for _s in (sys.stdout, sys.stderr):
+        try:
+            _s.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 from image_sources import (
     SUPPORTED_IMAGE_EXTENSIONS,
     discover_page_images,
