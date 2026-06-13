@@ -43,3 +43,6 @@ web/.env
 web/backend/.venv/
 web/frontend/node_modules/
 web/frontend/dist/
+
+latest_log.txt
+subprocess_test.log
